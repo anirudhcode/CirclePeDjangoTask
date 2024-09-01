@@ -25,10 +25,25 @@ class NewCargoView(APIView):
         try:
             cargo = Cargo.objects.get(id=id)
         except Cargo.DoesNotExist:
-            return Response({"message": "Cargo not found"}, status=404)
+            return Response({"message": "Cargo not found"}, status=status.HTTP_404_NOT_FOUND)
         except ValueError:
-            return Response({"message": "Invalid ID"}, status=400)
+            return Response({"message": "Invalid ID"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"message": str(e)}, status=500)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         serializer = CargoSerializer(cargo)
         return Response(serializer.data)
+    
+class DeleteCargoView(APIView):
+    def post(self, request):
+        data = request.data
+        cargo = Cargo.objects.get(id=data['id'])
+        trade = Trade.objects.get(cargo=cargo)
+        inventory = Inventory.objects.get(id=cargo.item.id)
+        volume = cargo.volume
+        inventory.volume += volume
+        trade.cargo = None
+        trade.save()
+        cargo.delete()
+        return Response({"message": "Cargo deleted successfully"}, status=status.HTTP_200_OK)
+
+
