@@ -1,9 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Trade
-from .serializers import NewTradeSerializer, TradeSerializer
+from .serializers import NewTradeSerializer, TradeSerializer, NewCargoTradeSerializer
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from cargo.serializers import CargoSerializer
 class TradeCreateRetrieveUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request, id):
         try:
             trade = Trade.objects.get(id=id)
@@ -18,23 +22,37 @@ class TradeCreateRetrieveUpdateView(APIView):
     
     def post(self, request):
         data = request.data
+        if 'cargo' in data:
+            serializer = NewCargoTradeSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors)
+        
         serializer = NewTradeSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        print(serializer.errors)
         return Response(serializer.errors)
     
     def put(self, request, trade_id, format=None):
-        trade = self.get_object(trade_id)
-        serializer = NewTradeSerializer(trade, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+        try:
+            trade = Trade.objects.get(id=trade_id)
+        except Trade.DoesNotExist:
+            return Response({"message": "Trade not found"}, status=status.HTTP_404_NOT_FOUND)
+        cargoSerializer = CargoSerializer(data=request.data)
+        if cargoSerializer.is_valid():
+            cargo = cargoSerializer.save()
+            trade.cargo = cargo
+            trade.save()
+            return Response(cargoSerializer.data, status=status.HTTP_200_OK)
+        return Response(cargoSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class OrderDeliveredView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, id):
         try:
             trade = Trade.objects.get(id=id)
@@ -63,6 +81,7 @@ class OrderDeliveredView(APIView):
         return Response({"status": status, "updated_at": updated_at}, status=200)
 
 class OrderCancelledView(APIView):
+   permission_classes = [IsAuthenticated]
    def post(self, request, id):
         try:
             trade = Trade.objects.get(id=id)
@@ -81,6 +100,7 @@ class CreateOrderView(APIView):
     pass
 
 class PaymentConfirmView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, id):
         try:
             trade = Trade.objects.get(id=id)

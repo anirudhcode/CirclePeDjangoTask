@@ -23,5 +23,5 @@ class Trade(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.id
+        return f'{self.seller.name} - {self.buyer.name}'
     

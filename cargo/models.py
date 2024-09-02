@@ -13,8 +13,10 @@ class Cargo(models.Model):
     item = models.ForeignKey('inventory.Inventory', on_delete=models.CASCADE, related_name='cargo')
     weight = models.FloatField()
     volume = models.FloatField()
-    origin = models.ForeignKey(SpaceStations, on_delete=models.CASCADE, related_name='origin')
     destination = models.ForeignKey(SpaceStations, on_delete=models.CASCADE, related_name='destination')
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='PENDING')
     shipment_date = models.DateTimeField(auto_now_add=True)
     delivery_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.item.productName} - {self.destination}'

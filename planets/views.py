@@ -23,7 +23,6 @@ class PlanetInventoryView(APIView):
             return Response({"message": "Invalid ID"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         inventory_data = (
             Inventory.objects
             .filter(spacestation__planet=planet)
@@ -44,7 +43,6 @@ class PlanetInventoryView(APIView):
             }
             for item in inventory_data
         ]
-
         return Response(inventory_data, status=status.HTTP_200_OK)
     
 class LowInventoryView(APIView):

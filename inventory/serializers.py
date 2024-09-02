@@ -10,5 +10,11 @@ class InventorySummarySerializer(serializers.ModelSerializer):
 class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
-        fields = ['id', 'spacestation', 'productName', 'description', 'quantity']
+        fields = ['id', 'spacestation', 'productName', 'description', 'quantity', 'capacity']
         read_only_fields = ['id']
+    
+class SpaceStationInventorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inventory
+        fields = ['id', 'productName', 'description', 'quantity', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'productName', 'description', 'quantity']

@@ -12,12 +12,14 @@ class NewCargoView(APIView):
         serializer = CargoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            trade = Trade.objects.get(id=data['trade'])
-            trade.cargo = serializer.instance
-            trade.save()
+            if 'trade' in data:
+                trade = Trade.objects.get(id=data['trade'])
+                trade.cargo = serializer.instance
+                trade.save()
             inventory = Inventory.objects.get(id=data['item'])
             volume = serializer.instance.volume
-            inventory.volume -= volume
+            inventory.quantity -= volume
+            inventory.save()
             return Response(serializer.data)
         return Response(serializer.errors)
     
@@ -34,13 +36,12 @@ class NewCargoView(APIView):
         return Response(serializer.data)
     
 class DeleteCargoView(APIView):
-    def post(self, request):
-        data = request.data
-        cargo = Cargo.objects.get(id=data['id'])
+    def delete(self, request, id):
+        cargo = Cargo.objects.get(id=id)
         trade = Trade.objects.get(cargo=cargo)
         inventory = Inventory.objects.get(id=cargo.item.id)
         volume = cargo.volume
-        inventory.volume += volume
+        inventory.quantity += volume
         trade.cargo = None
         trade.save()
         cargo.delete()
