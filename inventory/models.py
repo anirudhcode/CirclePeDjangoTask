@@ -7,8 +7,13 @@ class Inventory(models.Model):
     productName = models.CharField(max_length=255)
     description = models.TextField()
     quantity = models.IntegerField()
+    capacity = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.name
+    
+    @property
+    def is_low(self):
+        return self.quantity / self.capacity < 0.1
