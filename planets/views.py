@@ -4,6 +4,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from .serializers import PlanetsSerializer
 from inventory.models import Inventory
+from django.utils import timezone
+from trades.models import Trade
+from django.db.models import Sum
 class PlanetListView(APIView):
     def get(self, request):
         try:
@@ -68,3 +71,27 @@ class LowInventoryView(APIView):
         
 
             
+class PlanetTradeDataView(APIView):
+    def get(self, request):
+        try:
+            now = timezone.now()
+            last_30_days = now - timezone.timedelta(days=30)
+            
+            trade_data = []
+            
+            planets = Planets.objects.all()
+
+            for planet in planets:
+                total_trade_volume = Trade.objects.filter(
+                    created_at__gte=last_30_days,
+                    seller__planet=planet
+                ).aggregate(total_volume=Sum('cargo__weight'))['total_volume'] or 0
+                
+                trade_data.append({
+                    'planet': planet.localName,
+                    'total_trade_volume': total_trade_volume,
+                })
+            return Response(trade_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

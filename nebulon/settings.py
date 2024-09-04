@@ -28,9 +28,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+if env("RUN_ENV") == "DEV":
+    DEBUG = True
+else:
+    DEBUG = False
 
-ALLOWED_HOSTS = ["backend.anirudhcode.tech", "circlepe.anirudhcode.tech"]
+ALLOWED_HOSTS = ["backend.anirudhcode.tech", "circlepe.anirudhcode.tech", '127.0.0.1']
 
 
 # Application definition
@@ -51,6 +54,7 @@ INSTALLED_APPS = [
     'inventory',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -68,6 +72,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -172,6 +177,12 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+if env("RUN_ENV") != "DEV":
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://circlepe.anirudhcode.tech",
+]

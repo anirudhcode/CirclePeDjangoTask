@@ -5,6 +5,8 @@ from .serializers import NewTradeSerializer, TradeSerializer, NewCargoTradeSeria
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from cargo.serializers import CargoSerializer
+from django.utils import timezone
+from datetime import timedelta
 class TradeCreateRetrieveUpdateView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -113,3 +115,14 @@ class PaymentConfirmView(APIView):
         trade.payment_status = 'PAID'
         trade.save()
         return Response({"message": "Payment status updated successfully"}, status=status.HTTPS_200_OK)
+
+class TradeCountView(APIView):
+    def get(self, request):
+        trades = Trade.objects.filter(created_at__gte=timezone.now()-timedelta(days=30))
+        return Response({"total_trades": trades.count()})
+    
+class TradeAmountSummary(APIView):
+    def get(self, request):
+        trades = Trade.objects.filter(created_at__gte=timezone.now()-timedelta(days=30))
+        return Response({"total_amount": sum([t.amount for t in trades])})
+    
