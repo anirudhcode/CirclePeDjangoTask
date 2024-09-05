@@ -7,6 +7,7 @@ from trades.models import Trade
 from inventory.models import Inventory
 from django.utils import timezone
 from datetime import timedelta
+from django.core.paginator import Paginator
 
 
 class NewCargoView(APIView):
@@ -68,8 +69,15 @@ class RecentCargoView(APIView):
         cargoItems = Cargo.objects.all().order_by('-shipment_date')[:6]
         
         serializer = RecentCargoSerializer(cargoItems, many=True)
-        if not serializer.data:
-            return Response({"message": "No recent cargo items found"}, status=status.HTTP_404_NOT_FOUND)
-        if serializer.is_valid():
+        if serializer.data:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AllCargoPaginationView(APIView):
+    def get(self, request):
+        cargoItems = Cargo.objects.all().order_by('-shipment_date')
+        paginator = Paginator(cargoItems, 5)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        serializer = RecentCargoSerializer(page_obj, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

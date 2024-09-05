@@ -19,7 +19,10 @@ class CargoSerializer(serializers.ModelSerializer):
         return cargo
     
 class RecentCargoSerializer(serializers.ModelSerializer):
-    item = ItemSerializer()
+    destination = serializers.SerializerMethodField()
     class Meta:
         model = Cargo
-        fields = ['id', 'item', 'destination', 'shipment_date', 'status', 'delivery_date']
+        fields = ['id', 'destination', 'shipment_date', 'status']
+    
+    def get_destination(self, obj):
+        return obj.destination.name
