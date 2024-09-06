@@ -2,11 +2,13 @@ from rest_framework.views import APIView
 from .models import Planets
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import PlanetsSerializer
+from .serializers import PlanetsSerializer, PlanetSummarySerializer
 from inventory.models import Inventory
 from django.utils import timezone
 from trades.models import Trade
 from django.db.models import Sum
+from django.core.paginator import Paginator
+
 class PlanetListView(APIView):
     def get(self, request):
         try:
@@ -93,5 +95,17 @@ class PlanetTradeDataView(APIView):
                 })
             return Response(trade_data, status=status.HTTP_200_OK)
 
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class PlanetSummaryView(APIView):
+    def get(self, request):
+        try:
+            planets = Planets.objects.all().order_by('-created_at')
+            paginator = Paginator(planets, 8)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            serialzer = PlanetSummarySerializer(page_obj, many=True)
+            return Response(serialzer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -5,6 +5,7 @@ from rest_framework import status
 from inventory.serializers import SpaceStationInventorySerializer
 from spacestations.serializers import SpaceStationsSerializer
 from spacestations.models import SpaceStations
+from django.core.paginator import Paginator
 
 class StationInventoryView(APIView):
     def get(self, request, stationId):
@@ -32,3 +33,14 @@ class StationDetailsView(APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         serializer = SpaceStationsSerializer(station)
         return Response(serializer.data)
+
+class StationListPaginationView(APIView):
+    def get(self, request):
+        try:
+            stations = SpaceStations.objects.all()
+            page = request.GET.get('page', 1)
+            paginator = Paginator(stations, 5)
+            serializer = SpaceStationsSerializer(paginator.page(page), many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

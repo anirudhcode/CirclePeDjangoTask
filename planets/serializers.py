@@ -7,3 +7,11 @@ class PlanetsSerializer(serializers.ModelSerializer):
         fields = ['id', 'localName', 'englishName', 'location', 'planetAttributes', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
         
+class PlanetSummarySerializer(serializers.ModelSerializer):
+    spaceStations = serializers.SerializerMethodField()
+    class Meta:
+        model = Planets
+        fields = ['localName', 'englishName', 'location', 'planetAttributes', 'spaceStations', 'created_at']
+        
+    def get_spaceStations(self, instance):
+        return instance.spacestations.count()
