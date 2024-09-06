@@ -74,7 +74,7 @@ python manage.py runserver
 
 - [Frontend](https://circlepe.anirudhcode.tech)
 - [Backend](https://backend.anirudhcode.tech)
-  The project uses an API gateway to resolve the requests to the server running on backend using Nginx as a reverse proxy server and gunicorn as the application server.
+- The project uses an API gateway to resolve the requests to the server running on backend using Nginx as a reverse proxy server and gunicorn as the application server.
 
 ## Further Plans and Scaling path
 
